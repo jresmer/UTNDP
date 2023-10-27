@@ -1,0 +1,5 @@
+-   [x] implementação da leitura dos arquivos de entrada que representam as intâncias
+-   [ ] implementação da dos modos de execução do programa
+-   [ ] modelagem e implementação da classe BusLine
+-   [ ] modelagem e implementação do algoritmo da função objetivo
+-   [ ] modelagem e implementação do algortimo de otimização
