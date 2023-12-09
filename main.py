@@ -37,24 +37,25 @@ def prepare_instance(prefix : str) -> nx.DiGraph:
 
                 if cell not in ("Inf", "0"):
 
-                    g.add_edge(i, j, weight=float(cell), demand=0)
+                    g.add_edge(i, j, weight=float(cell))
 
     # lendo matriz de demanda / reading demand matrix
     file_path = path.join("Instances", prefix + "Demand.txt")
+
+    demand = []
 
     with open(file_path) as f:
 
         for i, row in enumerate(f):
 
+            demand.append(list())
             row = row.split()
 
             for j, cell in enumerate(row):
 
-                if (i, j) in list(g.edges):
+                demand[i].append(int(cell))
 
-                    g.edges[i, j]["demand"] = int(cell)
-
-    return g
+    return g, demand
 
 def main():
 
@@ -64,7 +65,7 @@ def main():
         if len(sys.argv) == 1:
 
             # preparando intâncias / preparing instances
-            g = prepare_instance("Mumford0")
+            g, d = prepare_instance("Mumford0")
 
 # roda o programa / runs program
 main()
