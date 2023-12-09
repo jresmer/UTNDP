@@ -1,6 +1,6 @@
 import networkx as nx
 
-class SGA:
+class NSGA:
 
     # operator cost function
     def operator_cost(self, g: nx.DiGraph, r: set) -> float:
