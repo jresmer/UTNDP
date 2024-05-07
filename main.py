@@ -1,6 +1,11 @@
 import sys
 import networkx as nx
+from time import time
 from os import path
+from nsga import NSGA, PopGenerator
+from consts import Consts
+from log_manager import LogManager
+from population_dao import PopulationDAO
 
 
 def prepare_instance(prefix : str) -> nx.DiGraph:
@@ -18,7 +23,7 @@ def prepare_instance(prefix : str) -> nx.DiGraph:
         for coord in f:
 
             x, y = coord.split()
-            x, y  = int(x), int(y)
+            x, y  = float(x), float(y)
 
             g.add_node(node, coord=(x,y))
 
@@ -64,8 +69,82 @@ def main():
         # padrão para testes / testing mode
         if len(sys.argv) == 1:
 
-            # preparando intâncias / preparing instances
-            g, d = prepare_instance("Mumford0")
+            consts = Consts()
+            log = LogManager()
+            dao = PopulationDAO()
+            gen = PopGenerator()
+            unsga3 = NSGA(consts)
+
+            # writing log header
+            log.write_header()
+
+            # instances
+            instances = ["Mumford0", "Mandl", "Mumford1", "Mumford2", "Mumford3"]
+
+            for instance in instances:
+
+                best_cost = (float("inf"), float("inf"))
+                best_ovr_individual = None
+                best_pop = None
+                consts.reset()
+
+                # preparando intâncias / preparing instances
+                g, d = prepare_instance(instance)
+
+                for _ in range(540):
+                    start_time = time()
+
+                    pop = gen.generate_population(
+                        g=g,
+                        routeset_size=consts.MIN_LINES,
+                        population_size=consts.POPULATION_SIZE,
+                        total_fleet=consts.FLEET_SIZE,
+                        max_vertices=consts.MAX_VERTICES,
+                        min_vertices=consts.MIN_VERTICES,
+                        demand_matrix=d
+                    )
+
+                    pop = unsga3.loop(
+                        max_generations=50,
+                        population=pop,
+                        g=g,
+                        reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],
+                        demand_matrix=d
+                    )
+
+                    best_individual, costs = unsga3.get_best_individual(g)
+
+                    for route in best_individual:
+
+                        print(f"main={route.get_main_route()}, return={route.get_return_route()}")
+
+                    if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
+                        costs[0] < best_cost[0] or costs[1] < best_cost[1]:
+
+                        best_cost = costs
+                        best_ovr_individual = best_individual
+                        best_pop = pop
+
+                    end_time = time()
+
+                    log.write_row(
+                        instance=instance,
+                        population_size=consts.POPULATION_SIZE,
+                        mutation_prob=consts.MUTATION_PROBABILITY,
+                        fleet_size=consts.FLEET_SIZE,
+                        min_lines=consts.MIN_LINES,
+                        min_vertices=consts.MIN_VERTICES,
+                        max_vertices=consts.MAX_VERTICES,
+                        transfer_penalty=consts.TRANFER_PENALTY,
+                        unreached_stop_penalty=consts.UNREACHABLE_STOP_PENALTY,
+                        best_ind=costs,
+                        start_time=start_time,
+                        end_time=end_time
+                    )   
+
+                    consts.vary()
+
+                dao.add(best_pop)
 
 # roda o programa / runs program
 main()
