@@ -5,29 +5,25 @@ from math import ceil
 
 class BusLine:
 
-    def __init__(self, id: int, starting_point: int, turnaround_time: float, fleet: int=1):
+    def __init__(self, id: int, starting_point: int, fleet: int=1):
 
         self._id = id
         self._fleet = fleet
         self._q0 = starting_point
         self._stops = [starting_point]
         self._return_route = []
-        self._turnaround_time = turnaround_time
 
-    def add_stop(self, position: int, stop: int, added_time: float):
+    def add_stop(self, position: int, stop: int):
 
         self._stops.insert(position, stop)
-        self._turnaround_time += added_time
 
     def remove_stop(self, position: int): # remover o tempo tomado pela parada
         
         self._stops.pop(position)
 
-    def substitute_stop(self, position: int, stops: list, total_added_time: int): # deve ser possível??
+    def substitute_stop(self, position: int, stops: list): # deve ser possível??
 
         self._stops = self._stops[:position] + stops + self._stops[position+1:]
-
-        self._turnaround_time += total_added_time
 
     def add_buses(self, extra_fleet: int=1):
 

@@ -1,6 +1,6 @@
 from random import choice
 from consts import Consts
-from networkx import DiGraph
+from networkx import DiGraph, all_simple_paths
 from bus_line import BusLine
 
 
@@ -97,8 +97,7 @@ class Utils:
 
                         route.add_stop(
                             position=pos,
-                            stop=new_stop,
-                            added_time=g.edges[new_stop, route.at(pos)]["weight"]
+                            stop=new_stop
                         )
 
                         unreached_stops.remove(new_stop)
@@ -121,14 +120,9 @@ class Utils:
 
                         new_stop = choice(possible_stops)
 
-                        time_diff = g.edges[route.at(pos-1), new_stop]["weight"]
-                        time_diff += g.edges[new_stop, route.at(pos)]["weight"]
-                        time_diff -= g.edges[route.at(pos-1), route.at(pos)]["weight"]
-
                         route.add_stop(
                             position=pos,
                             stop=new_stop,
-                            added_time=time_diff
                         )
 
                         unreached_stops.remove(new_stop)
@@ -145,7 +139,6 @@ class Utils:
                         route.add_stop(
                             position=pos,
                             stop=new_stop,
-                            added_time=g.edges[route.at(pos - 1), new_stop]["weight"]
                         )
 
                         unreached_stops.remove(new_stop)
@@ -187,37 +180,49 @@ class Utils:
             return routeset
     
     @staticmethod
-    def recalculate_return_route(g: DiGraph, stop0: int, stopn: int) -> list:
+    def recalculate_return_route(g: DiGraph, stop0: int, stopn: int, method: str="dfs") -> list:
 
-        frontier = list(g.successors(stop0))
-        a = {vertice: stop0 for vertice in frontier}
-        a[stop0] = None
-        next_stop = None
 
-        while next_stop != stopn:
+        if method == "dfs":
 
-            if not frontier:
+            frontier = list(g.successors(stop0))
+            a = {vertice: stop0 for vertice in frontier}
+            a[stop0] = None
+            next_stop = None
+
+            while next_stop != stopn:
+
+                if not frontier:
+
+                    return []
+
+                next_stop = frontier.pop(0)
+
+                sucessors = list(g.successors(next_stop))
+                for stop in sucessors:
+
+                    if stop not in a.keys():
+
+                        a[stop] = next_stop
+                        frontier.insert(0, stop)
+
+            return_route = [next_stop]
+            p = a[next_stop]
+
+            while p != None:
+
+                return_route.append(p)
+                p = a[p]
+
+            return_route.reverse()
+            
+            return return_route
+        
+        elif method == "randomchoice":
+
+            paths = list(all_simple_paths(g, stop0, stopn))
+            if len(paths) < 1:
 
                 return []
-
-            next_stop = frontier.pop(0)
-
-            sucessors = list(g.successors(next_stop))
-            for stop in sucessors:
-
-                if stop not in a.keys():
-
-                    a[stop] = next_stop
-                    frontier.insert(0, stop)
-
-        return_route = [next_stop]
-        p = a[next_stop]
-
-        while p != None:
-
-            return_route.append(p)
-            p = a[p]
-
-        return_route.reverse()
-        
-        return return_route
+            else:
+                return choice(paths)

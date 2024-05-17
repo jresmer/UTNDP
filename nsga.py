@@ -33,7 +33,6 @@ class PopGenerator:
                 l = BusLine(
                     id=len(routeset),
                     starting_point=first_stop,
-                    turnaround_time=0,
                     fleet=0
                 )
 
@@ -69,7 +68,6 @@ class PopGenerator:
                             l = BusLine(
                                 id=len(population),
                                 starting_point=route[0],
-                                turnaround_time=0,
                                 fleet=0
                             )
 
@@ -77,8 +75,7 @@ class PopGenerator:
 
                                 l.add_stop(
                                     position=l.get_length(),
-                                    stop=route[i],
-                                    added_time=g.edges[route[i-1], route[i]]["weight"]
+                                    stop=route[i]
                                 )
 
                             next_stop = l.at(l.get_length() - 1)
@@ -100,8 +97,7 @@ class PopGenerator:
                     selected_stops.add(next_stop)
                     l.add_stop(
                         stop=next_stop,
-                        position=l_length,
-                        added_time=g.edges[last_stop, next_stop]["weight"],
+                        position=l_length
                     )
 
                 stops = l.get_stops()
@@ -116,7 +112,6 @@ class PopGenerator:
 
                         if len(return_route) > 0 or stops[-1] == stops[0]:
                             
-                            print(f"main={route.get_main_route()}, return={route.get_return_route()}")
                             return_route_found = True
                             break
 
@@ -417,8 +412,7 @@ class NSGA:
                 
                 chosen_route.add_stop(
                     position=chosen_position,
-                    stop=new_stop,
-                    added_time=g.edges[chosen_route.at(chosen_position), new_stop]["weight"]
+                    stop=new_stop
                 )
 
                 made_changes += 1
@@ -436,8 +430,6 @@ class NSGA:
                     if not available_stops: continue
                     new_stop = choice(available_stops)
 
-                    time_diff = g.edges[predecessor, new_stop]["weight"] - g.edges[predecessor, chosen_route.at(-1)]["weight"]
-
                 else:
 
                     sucessor = chosen_route.at(1)
@@ -446,13 +438,10 @@ class NSGA:
                     
                     if not available_stops: continue
                     new_stop = choice(available_stops)
-                    
-                    time_diff = g.edges[new_stop, sucessor]["weight"] - g.edges[chosen_route.at(0), sucessor]["weight"]
 
                 chosen_route.substitute_stop(
                     position=chosen_stop_index,
-                    stops=[new_stop],
-                    total_added_time=time_diff
+                    stops=[new_stop]
                 )
 
                 made_changes += 1
@@ -793,6 +782,8 @@ class NSGA:
 
         for generation in range(max_generations):
 
+            print(f"gen={generation}")
+
             r = deepcopy(population)
             r = routeset_union(r, offspring)
 
@@ -808,6 +799,8 @@ class NSGA:
                 obj_values.append(individual_values)
 
             fronts, ranks = self.non_dominanted_sort(obj_values)
+
+            print("sorting done")
 
             s = []
             i = -1
@@ -841,6 +834,8 @@ class NSGA:
                 selected_fronts=fronts[:i]
             )
 
+            print("associations done")
+
             # last front to be included
             if K > 0:
 
@@ -871,6 +866,8 @@ class NSGA:
             else:
 
                 population = s
+
+            print("population selected")
                 
             offspring = self.generate_offspring(
                 g=g,
@@ -881,6 +878,8 @@ class NSGA:
                 demand_matrix=demand_matrix,
                 ref_points=reference_points
             )
+
+            print("offspring generated")
 
         self.__last_population = population
 
@@ -921,7 +920,6 @@ class NSGA:
 
 class Hyperplane:
 
-    # TODO - revisar o artigo de normalização do hiperplano
     def __init__(self, n_dimensions):
         
         self.ai = [0 for _ in range(n_dimensions)]
