@@ -782,8 +782,6 @@ class NSGA:
 
         for generation in range(max_generations):
 
-            print(f"gen={generation}")
-
             r = deepcopy(population)
             r = routeset_union(r, offspring)
 
@@ -799,8 +797,6 @@ class NSGA:
                 obj_values.append(individual_values)
 
             fronts, ranks = self.non_dominanted_sort(obj_values)
-
-            print("sorting done")
 
             s = []
             i = -1
@@ -834,8 +830,6 @@ class NSGA:
                 selected_fronts=fronts[:i]
             )
 
-            print("associations done")
-
             # last front to be included
             if K > 0:
 
@@ -866,8 +860,6 @@ class NSGA:
             else:
 
                 population = s
-
-            print("population selected")
                 
             offspring = self.generate_offspring(
                 g=g,
@@ -878,8 +870,6 @@ class NSGA:
                 demand_matrix=demand_matrix,
                 ref_points=reference_points
             )
-
-            print("offspring generated")
 
         self.__last_population = population
 
