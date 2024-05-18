@@ -91,7 +91,7 @@ def main():
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
 
-                for _ in range(540):
+                for _ in range(72):
                     start_time = time()
 
                     pop = gen.generate_population(
@@ -105,7 +105,7 @@ def main():
                     )
 
                     pop = unsga3.loop(
-                        max_generations=50,
+                        max_generations=200,
                         population=pop,
                         g=g,
                         reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],

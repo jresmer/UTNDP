@@ -23,11 +23,11 @@ class Consts:
         self.__POPULATION_SIZE = ps
 
         # possible parameters
-        self._par = [[20, 15, 25], # TRANFER_PENALTY
-                     [4, 2, 3], # MIN_VERTICES
-                     [8, 9, 10], # MAX_VERTICES
-                     [0.3, 0.1, 0.2, 0.4, 0.5], # MUTATION_PROBABILITY
-                     [120, 100, 150, 200]] # UNREACHABLE_STOP_PENALTY
+        self._par = [[15, 20, 25], # TRANFER_PENALTY
+                     [4, 3], # MIN_VERTICES
+                     [8, 10], # MAX_VERTICES
+                     [0.1, 0.25, 0.5], # MUTATION_PROBABILITY
+                     [120, 200]] # UNREACHABLE_STOP_PENALTY
         
         self._t = [self._set_tp,
                    self._set_min_v,
