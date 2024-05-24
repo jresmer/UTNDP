@@ -785,6 +785,7 @@ class NSGA:
             r = deepcopy(population)
             r = routeset_union(r, offspring)
             m = [None] * len(r)
+            m_size = 0
 
             obj_values = list()
 
@@ -792,31 +793,31 @@ class NSGA:
 
                 individual_values = [
                      self.operator_cost(individual),
-                     self.passanger_cost(g, individual)
-                     ]
+                     self.passanger_cost(g, individual)]
                 
                 obj_values.append(individual_values)
 
             fronts, ranks = self.non_dominanted_sort(obj_values)
 
-            s = []
+            s = list()
             i = -1
 
             while i < len(fronts) - 1:
                 
-                front_ = []
                 i += 1
-                for individual in fronts[i]:
 
-                    front_.append(r[individual])
-                    m[individual] = len(s) + len(front_) - 1
+                front_= [r[individual] for individual in fronts[i]]
 
                 if len(s) + len(front_) > len(population):
 
                     break
+                
+                for individual in fronts[i]:
+
+                    m[individual] = m_size
+                    m_size += 1
 
                 s = routeset_union(s, front_)
-                m
 
             K = len(population) - len(s)
             hyperplane.update(
@@ -858,12 +859,12 @@ class NSGA:
                     associations=associations
                 )
 
-                c_ = []
-                s_size = len(s)
+                c_ = list()
                 for individual in c:
                     
                     c_.append(r[individual])
-                    m[individual] = s_size + len(c_) - 1
+                    m[individual] = m_size
+                    m_size += 1
                 population = routeset_union(s, c_)
                 population = list(population)
 
@@ -881,7 +882,7 @@ class NSGA:
 
                         new_niche.append(m[ind])
                 associations[i] = new_niche
-
+            
             offspring = self.generate_offspring(
                 g=g,
                 population=population,
