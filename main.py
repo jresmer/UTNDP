@@ -70,7 +70,7 @@ def main():
         if len(sys.argv) == 1:
 
             consts = Consts()
-            log = LogManager()
+            log = LogManager("log2.csv")
             dao = PopulationDAO()
             gen = PopGenerator()
             unsga3 = NSGA(consts)
@@ -144,7 +144,7 @@ def main():
 
                     consts.vary()
 
-                dao.add(best_pop)
+                    dao.add(best_pop)
 
 # roda o programa / runs program
 main()
