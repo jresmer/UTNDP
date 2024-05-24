@@ -70,7 +70,7 @@ def main():
         if len(sys.argv) == 1:
 
             consts = Consts()
-            log = LogManager("log2.csv")
+            log = LogManager("nsga_log.csv")
             dao = PopulationDAO()
             gen = PopGenerator()
             unsga3 = NSGA(consts)

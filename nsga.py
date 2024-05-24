@@ -784,6 +784,7 @@ class NSGA:
 
             r = deepcopy(population)
             r = routeset_union(r, offspring)
+            m = [None] * len(r)
 
             obj_values = list()
 
@@ -800,18 +801,22 @@ class NSGA:
 
             s = []
             i = -1
-            front_ = None
 
             while i < len(fronts) - 1:
-
+                
+                front_ = []
                 i += 1
-                front_ = [r[individual] for individual in fronts[i]]
+                for individual in fronts[i]:
+
+                    front_.append(r[individual])
+                    m[individual] = len(s) + len(front_) - 1
 
                 if len(s) + len(front_) > len(population):
 
                     break
 
                 s = routeset_union(s, front_)
+                m
 
             K = len(population) - len(s)
             hyperplane.update(
@@ -853,17 +858,33 @@ class NSGA:
                     associations=associations
                 )
 
-                c = [r[individual] for individual in c]
-                population = routeset_union(s, c)
+                c_ = []
+                s_size = len(s)
+                for individual in c:
+                    
+                    c_.append(r[individual])
+                    m[individual] = s_size + len(c_) - 1
+                population = routeset_union(s, c_)
                 population = list(population)
 
             else:
 
                 population = s
-                
+            for i in range(len(associations)):
+
+                niche = associations[i]
+                new_niche = []
+                for j in range(len(niche)):
+
+                    ind = niche[j]
+                    if m[ind] is not None:
+
+                        new_niche.append(m[ind])
+                associations[i] = new_niche
+
             offspring = self.generate_offspring(
                 g=g,
-                population=r,
+                population=population,
                 associations=associations,
                 ranks=ranks,
                 obj_values=obj_values,
