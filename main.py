@@ -79,7 +79,7 @@ def main():
             log.write_header()
 
             # instances
-            instances = ["Mumford0", "Mandl", "Mumford1", "Mumford2", "Mumford3"]
+            instances = ["Mumford0"]
 
             for instance in instances:
 
