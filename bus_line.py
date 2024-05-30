@@ -77,7 +77,7 @@ class BusLine:
     
     def __eq__(self, other: list) -> bool:
 
-        return self._stops == other
+        return self._stops + self._return_route[1:-1] == other.get_stops()
     
     def set_return_route(self, return_route: tuple) -> bool:
 

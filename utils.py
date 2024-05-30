@@ -33,14 +33,12 @@ class Utils:
 
         for route in routeset:
 
-            route.add_buses()
+            route.add_buses(1)
             t_fleet -= 1
 
         demand_per_vehicle = t_demand / t_fleet
         max_unsatisfied_demand = 0
         unused_fleet_candidate = None
-        largest_allocated_fleet = 0
-        candidate_for_fleet_removal = None
 
         for i, route in enumerate(routeset):
 
@@ -54,11 +52,6 @@ class Utils:
 
                 max_unsatisfied_demand = unsatisfied_demand
                 unused_fleet_candidate = i
-            
-            elif allocated_fleet > largest_allocated_fleet:
-
-                largest_allocated_fleet = allocated_fleet
-                candidate_for_fleet_removal = i
 
         if t_fleet > 0:
 
@@ -74,13 +67,6 @@ class Utils:
             else:
 
                 routeset[unused_fleet_candidate].add_buses(t_fleet)
-        # elif t_fleet < 0:
-
-        #     r = routeset[candidate_for_fleet_removal]
-        #     fleet = r.get_fleet()
-        #     r.reset_fleet()
-        #     fleet += t_fleet
-        #     r.add_buses(fleet)
 
     @staticmethod
     def repair(g: DiGraph, routeset: list, unreached_stops: set, max_vertices: int):
@@ -106,7 +92,6 @@ class Utils:
                         if len(return_route) > 0 or route.at(-1) == route.at(0):
                             route.set_return_route(return_route)
                         else:
-                            print(f"main={route.get_main_route()}, return={route.get_return_route()}")
                             route.remove_stop(pos)
                             unreached_stops.add(new_stop)
 
@@ -147,7 +132,6 @@ class Utils:
                         if len(return_route) > 0 or route.at(-1) == route.at(0):
                             route.set_return_route(return_route)
                         else:
-                            print(f"main={route.get_main_route()}, return={route.get_return_route()}")
                             route.remove_stop(pos)
                             unreached_stops.add(new_stop)
         

@@ -97,7 +97,7 @@ def main():
                     pop = gen.generate_population(
                         g=g,
                         routeset_size=consts.MIN_LINES,
-                        population_size=consts.POPULATION_SIZE,
+                        population_size=200,
                         total_fleet=consts.FLEET_SIZE,
                         max_vertices=consts.MAX_VERTICES,
                         min_vertices=consts.MIN_VERTICES,
@@ -114,15 +114,10 @@ def main():
 
                     best_individual, costs = unsga3.get_best_individual(g)
 
-                    for route in best_individual:
-
-                        print(f"main={route.get_main_route()}, return={route.get_return_route()}")
-
                     if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
                         costs[0] < best_cost[0] or costs[1] < best_cost[1]:
 
                         best_cost = costs
-                        best_ovr_individual = best_individual
                         best_pop = pop
 
                     end_time = time()

@@ -283,7 +283,6 @@ class NSGA:
     
         return float('inf')
 
-    # TODO - conferir comportamento com o get_stops atual
     def crossover(self, first_parent: list, second_parent: list):
 
         exhausted_parents = set()
@@ -292,7 +291,7 @@ class NSGA:
 
         parents = [deepcopy(first_parent),
                    deepcopy(second_parent)]
-
+        
         seed = choice(first_parent)
         parents[0].remove(seed)
         offspring.append(seed)
@@ -446,7 +445,6 @@ class NSGA:
 
                 made_changes += 1
 
-        
             stops = chosen_route.get_main_route()
             return_route = Utils.recalculate_return_route(g, stops[-1], stops[0])
             if len(return_route) > 0 or stops[-1] == stops[0]:
@@ -631,6 +629,13 @@ class NSGA:
                 demand_matrix=demand_matrix,
                 t_fleet=self._consts.FLEET_SIZE
             )
+
+            fleet = 0
+            for route in child:
+                fleet += route.get_fleet()
+            if fleet != self._consts.FLEET_SIZE:
+                print(fleet)
+                input()
             
             offspring.append(child)
 
@@ -659,18 +664,11 @@ class NSGA:
 
         return distances
 
-    def associate(self, ref_points: list, obj_values: list, selected_fronts: list):
-
-        individuals = set()
-        for front in selected_fronts:
-
-            individuals = individuals.union(set(front))
-        
-        individuals = list(individuals)
+    def associate(self, ref_points: list, obj_values: list):
 
         associations = [None] * len(ref_points)
 
-        for individual in individuals:
+        for individual in range(len(obj_values)):
         
             best_point = None
             shortest_dist = float("inf")
@@ -699,16 +697,17 @@ class NSGA:
 
         return associations
             
-    def niching(self, niches, associations, fronts, distance_matrix, n_individuals_to_be_selected):
+    def niching(self, niches, associations, fronts, distance_matrix, n_individuals_to_be_selected, population):
 
         def associations_len(i: list) -> int:
 
             niche, associations = i
             
             return len(associations)
-
+        
+        k = 0
+        for niche in associations: k += len(niche)
         niches = zip(niches, associations)
-        chosen_individuals = list()
         front_n = 0
         front = fronts[front_n]
 
@@ -725,15 +724,21 @@ class NSGA:
 
                 sorted_front = list(enumerate(front))
                 sorted_front.sort(key=lambda individual: distance_matrix[i][individual[0]])
-                selected_individual = sorted_front[0][1]
+                for j in range(len(sorted_front)):
 
-                front.remove(selected_individual)
-                chosen_individuals.append(selected_individual)
-                associations[i].append(selected_individual)
+                    selected_individual = sorted_front[j][1]
+                    previous_length = len(population)
+                    population = self.routeset_union(population, [selected_individual])
+                    front.remove(selected_individual)
+
+                    if len(population) > previous_length:
+                        associations[i].append(k)
+                        k += 1
+                        break
 
             n_individuals_to_be_selected -= ind_selected_this_iter
 
-        return chosen_individuals
+        return population
             
 
     def normalize(self, obj_values, ideal_point, nadir_point):
@@ -752,40 +757,38 @@ class NSGA:
 
         return values
     
-    def loop(self, max_generations: int, population: list, g: nx.DiGraph, reference_points: list, demand_matrix: list) -> list:
-    
-        def routeset_union(r1, r2):
+    @staticmethod
+    def routeset_union(r1, r2):
 
-            union_r = deepcopy(r1)
+        union_r = deepcopy(r1)
 
-            for new_routeset in r2:
+        for new_routeset in r2:
+            unique = True
 
-                unique = True
+            for old_routeset in r1:
 
-                for old_routeset in r1:
-
-                    if all(any(old_route == new_route for old_route in old_routeset) for new_route in new_routeset):
-                            
-                        unique = False
-                        break
+                if all(any(old == new for old in old_routeset) for new in new_routeset):
+                  
+                    unique = False
+                    break
                 
-                if unique:
+            if unique:
+                union_r.append(new_routeset)
 
-                    union_r.append(new_routeset)
-
-            return union_r
+        return union_r
+    
+    def loop(self, max_generations: int, population: list, g: nx.DiGraph, reference_points: list, demand_matrix: list) -> list:
 
         hyperplane = Hyperplane(2)
 
         offspring = list()
         associations = None
+        length = len(population) 
 
         for generation in range(max_generations):
 
             r = deepcopy(population)
-            r = routeset_union(r, offspring)
-            m = [None] * len(r)
-            m_size = 0
+            r = self.routeset_union(r, offspring)
 
             obj_values = list()
 
@@ -800,49 +803,60 @@ class NSGA:
             fronts, ranks = self.non_dominanted_sort(obj_values)
 
             s = list()
-            i = -1
-
-            while i < len(fronts) - 1:
+            s_ids = list()
+            front_i = -1
+            
+            while front_i < len(fronts) - 1:
                 
-                i += 1
+                front_i += 1
 
-                front_= [r[individual] for individual in fronts[i]]
+                front_= [r[individual] for individual in fronts[front_i]]
 
-                if len(s) + len(front_) > len(population):
-
+                if len(s) + len(front_) > length:
+            
                     break
                 
-                for individual in fronts[i]:
+                # union operation:
+                for i, new_routeset in enumerate(front_):
 
-                    m[individual] = m_size
-                    m_size += 1
+                    unique = True
+                    for old_routeset in s:
 
-                s = routeset_union(s, front_)
+                        if all(any(old == new for old in old_routeset) for new in new_routeset):
+                            unique = False
+                            break
 
-            K = len(population) - len(s)
+                    if unique:
+                        s.append(new_routeset)
+                        s_ids.append(fronts[front_i][i])
+
+            K = length - len(s)
             hyperplane.update(
                 obj_values=obj_values,
                 fronts=fronts
                 )
             ideal_p, nadir_p = hyperplane.ideal_point, hyperplane.nadir_point
             obj_values = self.normalize(
-                obj_values= obj_values, 
+                obj_values=obj_values, 
                 ideal_point=ideal_p,
                 nadir_point=nadir_p
                 )
+            selected_ind_values = list()
+            for k in s_ids:
+                selected_ind_values.append(obj_values[k])
             associations = self.associate(
                 ref_points=reference_points,
-                obj_values=obj_values,
-                selected_fronts=fronts[:i]
+                obj_values=selected_ind_values
             )
 
             # last front to be included
             if K > 0:
 
-                remainder_individuals = fronts[i]
-                remainder_fronts = fronts[i:]
-                for front in fronts[i+1:]:
+                remainder_individuals = fronts[front_i]
+                remainder_fronts = [[r[ind] for ind in fronts[front_i]]]
+                for front in fronts[front_i+1:]:
 
+                    remainder_fronts.append([r[ind] for ind in fronts[front_i]])
                     remainder_individuals += front
 
                 d = self.calculate_distances(
@@ -850,39 +864,18 @@ class NSGA:
                     individuals=remainder_individuals,
                     obj_values=obj_values
                 )
-
-                c = self.niching(
+                s = self.niching(
                     niches=reference_points,
                     fronts=remainder_fronts,
                     distance_matrix=d,
                     n_individuals_to_be_selected=K,
-                    associations=associations
+                    associations=associations,
+                    population=s
                 )
+                o = 0
+                for niche in associations: o += len(niche)
 
-                c_ = list()
-                for individual in c:
-                    
-                    c_.append(r[individual])
-                    m[individual] = m_size
-                    m_size += 1
-                population = routeset_union(s, c_)
-                population = list(population)
-
-            else:
-
-                population = s
-            for i in range(len(associations)):
-
-                niche = associations[i]
-                new_niche = []
-                for j in range(len(niche)):
-
-                    ind = niche[j]
-                    if m[ind] is not None:
-
-                        new_niche.append(m[ind])
-                associations[i] = new_niche
-            
+            population = s
             offspring = self.generate_offspring(
                 g=g,
                 population=population,
