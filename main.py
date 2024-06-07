@@ -70,8 +70,8 @@ def main():
         if len(sys.argv) == 1:
 
             consts = Consts()
-            log = LogManager("nsga_log.csv")
-            dao = PopulationDAO()
+            log = LogManager("refactor_log.csv")
+            dao = PopulationDAO("refactor_pop_data.txt")
             gen = PopGenerator()
             unsga3 = NSGA(consts)
 

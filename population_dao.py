@@ -3,9 +3,9 @@ import pickle
 
 class PopulationDAO:
 
-    def __init__(self):
+    def __init__(self, file="pop_data.txt"):
         self.__data = []
-        self.__file = "pop_data.txt"
+        self.__file = file
         try:
             self.__load()
         except FileNotFoundError:
