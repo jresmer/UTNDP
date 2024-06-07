@@ -178,7 +178,7 @@ class NSGA:
         return cost
     
     # passenger cost
-    def passanger_cost(self, g: nx.DiGraph, r: list) -> float:
+    def passanger_cost(self, g: nx.DiGraph, r: list, demand_matrix: list) -> float:
         """
         The passanger cost for a routset r is the average time a passanger takes to travel from a node u to a node v
         by using the routes available added to a possible penalty in case a certain destiny v is not reachable from a starting pont u
@@ -266,6 +266,7 @@ class NSGA:
 
         n = g.number_of_nodes()
         total_time = 0
+        total_demand = 0
 
         for i in range(n):
 
@@ -276,10 +277,12 @@ class NSGA:
                     total_time += self._consts.UNREACHABLE_STOP_PENALTY
                 else:
                     
-                    total_time += d[i][j]
+                    total_time += d[i][j]*demand_matrix[i][j]
+
+                total_demand += demand_matrix[i][j]
 
         if n > 0:
-            return total_time / (n ** 2)
+            return total_time / total_demand
     
         return float('inf')
 
@@ -796,7 +799,7 @@ class NSGA:
 
                 individual_values = [
                      self.operator_cost(individual),
-                     self.passanger_cost(g, individual)]
+                     self.passanger_cost(g, individual, demand_matrix)]
                 
                 obj_values.append(individual_values)
 
@@ -890,14 +893,14 @@ class NSGA:
 
         return population
     
-    def get_best_individual(self, g: nx.DiGraph):
+    def get_best_individual(self, g: nx.DiGraph, d: list):
 
         obj_values = list()
         for individual in self.__last_population:
 
             individual_values = [
                  self.operator_cost(individual),
-                 self.passanger_cost(g, individual)
+                 self.passanger_cost(g, individual, d)
                  ]
                 
             obj_values.append(individual_values)

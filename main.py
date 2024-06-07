@@ -112,7 +112,7 @@ def main():
                         demand_matrix=d
                     )
 
-                    best_individual, costs = unsga3.get_best_individual(g)
+                    _, costs = unsga3.get_best_individual(g, d)
 
                     if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
                         costs[0] < best_cost[0] or costs[1] < best_cost[1]:
