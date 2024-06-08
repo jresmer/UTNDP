@@ -84,7 +84,6 @@ def main():
             for instance in instances:
 
                 best_cost = (float("inf"), float("inf"))
-                best_ovr_individual = None
                 best_pop = None
                 consts.reset()
 

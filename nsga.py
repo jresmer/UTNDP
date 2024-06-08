@@ -102,22 +102,6 @@ class PopGenerator:
 
                 stops = l.get_stops()
                 return_route = Utils.recalculate_return_route(g, stops[-1], stops[0])
-                if len(return_route) == 0 and stops[0] != stops[-1]:
-                    
-                    return_route_found = False
-                    while l.get_length() > self._consts.MIN_VERTICES:
-                        
-                        l.remove_stop(l.get_length() - 1)
-                        return_route = Utils.recalculate_return_route(g, stops[-1], stops[0])
-
-                        if len(return_route) > 0 or stops[-1] == stops[0]:
-                            
-                            return_route_found = True
-                            break
-
-                    if not return_route_found:
-
-                        continue
                 
                 l.set_return_route(return_route)
 
@@ -374,8 +358,6 @@ class NSGA:
             choice_ = random()
             chosen_route = choice(routeset_)
             reached_stops = set(chosen_route.get_stops())
-            old_main_route = deepcopy(chosen_route.get_main_route())
-            old_return_route = deepcopy(chosen_route.get_return_route())
 
             # remove stop
             if choice_ < 0.33:
@@ -450,13 +432,7 @@ class NSGA:
 
             stops = chosen_route.get_main_route()
             return_route = Utils.recalculate_return_route(g, stops[-1], stops[0])
-            if len(return_route) > 0 or stops[-1] == stops[0]:
-                chosen_route.set_return_route(return_route)
-            else:
-                chosen_route.set_main_route(old_main_route)
-                chosen_route.set_return_route(old_return_route)
-                routeset_.append(chosen_route)
-                made_changes -= 1
+            chosen_route.set_return_route(return_route)
 
     # Checks if a solution dominates another (2 objective functions)
     @staticmethod
@@ -582,26 +558,38 @@ class NSGA:
             routeset_n += niche
 
         while len(offspring) < len(population):
+            
+            # tournament selection
+            # first parent
+            candidates = sample(routeset_n, 16)
+            while len(candidates) > 1:
 
-            possible_p1, possible_p2 = sample(routeset_n, 2)
-            parent1 = self.parent_selection(
-                parent1=possible_p1,
-                parent2=possible_p2,
-                associations=associations,
-                ranks=(ranks[possible_p1], ranks[possible_p2]),
-                obj_values=obj_values,
-                ref_points=ref_points
-            )
+                possible_p1, possible_p2 = candidates.pop(), candidates.pop()
+                parent = self.parent_selection(
+                    parent1=possible_p1,
+                    parent2=possible_p2,
+                    associations=associations,
+                    ranks=(ranks[possible_p1], ranks[possible_p2]),
+                    obj_values=obj_values,
+                    ref_points=ref_points
+                )
+                candidates = [parent] + candidates
+            parent1 = candidates.pop()
+            # second parent
+            candidates = sample(routeset_n, 16)
+            while len(candidates) > 1:
 
-            possible_p1, possible_p2 = sample(routeset_n, 2)
-            parent2 = self.parent_selection(
-                parent1=possible_p1,
-                parent2=possible_p2,
-                associations=associations,
-                ranks=(ranks[possible_p1], ranks[possible_p2]),
-                obj_values=obj_values,
-                ref_points=ref_points
-            )
+                possible_p1, possible_p2 = candidates.pop(), candidates.pop()
+                parent = self.parent_selection(
+                    parent1=possible_p1,
+                    parent2=possible_p2,
+                    associations=associations,
+                    ranks=(ranks[possible_p1], ranks[possible_p2]),
+                    obj_values=obj_values,
+                    ref_points=ref_points
+                )
+                candidates = [parent] + candidates
+            parent2 = candidates.pop()
 
             child = self.crossover(population[parent1], population[parent2])
 

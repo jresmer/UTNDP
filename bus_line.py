@@ -83,7 +83,7 @@ class BusLine:
 
         if self._stops[0] == self._stops[-1]:
 
-            self._return_route = return_route
+            self._return_route = []
             return True
     
         if return_route[-1] == self._stops[0] and \

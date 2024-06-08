@@ -89,11 +89,7 @@ class Utils:
                         unreached_stops.remove(new_stop)
 
                         return_route = Utils.recalculate_return_route(g, route.at(-1), route.at(0))
-                        if len(return_route) > 0 or route.at(-1) == route.at(0):
-                            route.set_return_route(return_route)
-                        else:
-                            route.remove_stop(pos)
-                            unreached_stops.add(new_stop)
+                        route.set_return_route(return_route)
 
                 elif pos < route.get_length():
 
@@ -129,11 +125,7 @@ class Utils:
                         unreached_stops.remove(new_stop)
 
                         return_route = Utils.recalculate_return_route(g, route.at(-1), route.at(0))
-                        if len(return_route) > 0 or route.at(-1) == route.at(0):
-                            route.set_return_route(return_route)
-                        else:
-                            route.remove_stop(pos)
-                            unreached_stops.add(new_stop)
+                        route.set_return_route(return_route)
         
             routes = list(range(len(routeset)))
 
