@@ -452,7 +452,6 @@ class NSGA:
         population_size = len(obj_values)
         dominance_matrix = [[0] * population_size for _ in range(population_size)]
         ranks = [0] * population_size
-        ranks_ = [0] * population_size
         fronts = [[]]
 
         for i in range(population_size):
@@ -476,6 +475,7 @@ class NSGA:
             if ranks[i] == 0: fronts[0].append(i)
 
         index = 0
+        ranks_ = deepcopy(ranks)
 
         while len(fronts[index]) > 0:
 
@@ -578,7 +578,7 @@ class NSGA:
             # second parent
             candidates = sample(routeset_n, 16)
             while len(candidates) > 1:
-
+                
                 possible_p1, possible_p2 = candidates.pop(), candidates.pop()
                 parent = self.parent_selection(
                     parent1=possible_p1,
@@ -688,7 +688,17 @@ class NSGA:
 
         return associations
             
-    def niching(self, niches, associations, fronts, distance_matrix, n_individuals_to_be_selected, population):
+    def niching(self,
+                niches,
+                associations,
+                fronts,
+                distance_matrix,
+                n_individuals_to_be_selected,
+                population,
+                ranks,
+                new_ranks,
+                values,
+                new_values):
 
         def associations_len(i: list) -> int:
 
@@ -717,13 +727,15 @@ class NSGA:
                 sorted_front.sort(key=lambda individual: distance_matrix[i][individual[0]])
                 for j in range(len(sorted_front)):
 
-                    selected_individual = sorted_front[j][1]
+                    selected_individual = sorted_front[j][1][1]
                     previous_length = len(population)
                     population = self.routeset_union(population, [selected_individual])
-                    front.remove(selected_individual)
+                    front.remove(sorted_front[j][1])
 
                     if len(population) > previous_length:
                         associations[i].append(k)
+                        new_ranks.append(ranks[sorted_front[j][1][0]])
+                        new_values.append(values[sorted_front[j][1][0]])
                         k += 1
                         break
 
@@ -833,8 +845,10 @@ class NSGA:
                 nadir_point=nadir_p
                 )
             selected_ind_values = list()
+            ranks_ = list()
             for k in s_ids:
                 selected_ind_values.append(obj_values[k])
+                ranks_.append(ranks[k])
             associations = self.associate(
                 ref_points=reference_points,
                 obj_values=selected_ind_values
@@ -844,10 +858,10 @@ class NSGA:
             if K > 0:
 
                 remainder_individuals = fronts[front_i]
-                remainder_fronts = [[r[ind] for ind in fronts[front_i]]]
+                remainder_fronts = [[(ind, r[ind]) for ind in fronts[front_i]]]
                 for front in fronts[front_i+1:]:
 
-                    remainder_fronts.append([r[ind] for ind in fronts[front_i]])
+                    remainder_fronts.append([(ind, r[ind]) for ind in fronts[front_i]])
                     remainder_individuals += front
 
                 d = self.calculate_distances(
@@ -861,7 +875,11 @@ class NSGA:
                     distance_matrix=d,
                     n_individuals_to_be_selected=K,
                     associations=associations,
-                    population=s
+                    population=s,
+                    ranks=ranks,
+                    new_ranks=ranks_,
+                    values=obj_values,
+                    new_values=selected_ind_values
                 )
 
             population = s
@@ -869,8 +887,8 @@ class NSGA:
                 g=g,
                 population=population,
                 associations=associations,
-                ranks=ranks,
-                obj_values=obj_values,
+                ranks=ranks_,
+                obj_values=selected_ind_values,
                 demand_matrix=demand_matrix,
                 ref_points=reference_points
             )
