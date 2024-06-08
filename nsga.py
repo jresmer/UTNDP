@@ -863,8 +863,6 @@ class NSGA:
                     associations=associations,
                     population=s
                 )
-                o = 0
-                for niche in associations: o += len(niche)
 
             population = s
             offspring = self.generate_offspring(
