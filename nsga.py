@@ -910,6 +910,7 @@ class NSGA:
                 
             obj_values.append(individual_values)
 
+        v = deepcopy(obj_values)
         fronts, _ = self.non_dominanted_sort(obj_values)
         hyperplane.update(
             obj_values=obj_values,
@@ -924,7 +925,7 @@ class NSGA:
 
         best_ind = None
         best_ind_distance = float("inf")
-        best_values = None
+        index = 0
         for i in fronts[0]:
 
             individual = self.__last_population[i]
@@ -936,9 +937,9 @@ class NSGA:
 
                 best_ind = individual
                 best_ind_distance = dist
-                best_values = (op_cost, ps_cost)
+                index = i
 
-        return best_ind, best_values
+        return best_ind, v[index]
 
 
 class Hyperplane:
