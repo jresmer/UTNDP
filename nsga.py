@@ -900,6 +900,7 @@ class NSGA:
     def get_best_individual(self, g: nx.DiGraph, d: list):
 
         obj_values = list()
+        hyperplane = Hyperplane(2)
         for individual in self.__last_population:
 
             individual_values = [
@@ -910,6 +911,16 @@ class NSGA:
             obj_values.append(individual_values)
 
         fronts, _ = self.non_dominanted_sort(obj_values)
+        hyperplane.update(
+            obj_values=obj_values,
+            fronts=fronts
+            )
+        ideal_p, nadir_p = hyperplane.ideal_point, hyperplane.nadir_point
+        obj_values = self.normalize(
+            obj_values=obj_values, 
+            ideal_point=ideal_p,
+            nadir_point=nadir_p
+            )
 
         best_ind = None
         best_ind_distance = float("inf")

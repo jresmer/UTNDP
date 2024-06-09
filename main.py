@@ -70,8 +70,8 @@ def main():
         if len(sys.argv) == 1:
 
             consts = Consts()
-            log = LogManager("refactor_log.csv")
-            dao = PopulationDAO("refactor_pop_data.txt")
+            log = LogManager("rep_log.csv")
+            dao = PopulationDAO("rep_pop_data.txt")
             gen = PopGenerator()
             unsga3 = NSGA(consts)
 
@@ -90,7 +90,7 @@ def main():
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
 
-                for _ in range(72):
+                for _ in range(100):
                     start_time = time()
 
                     pop = gen.generate_population(
@@ -134,9 +134,7 @@ def main():
                         best_ind=costs,
                         start_time=start_time,
                         end_time=end_time
-                    )   
-
-                    consts.vary()
+                    )
 
                     dao.add(best_pop)
 
