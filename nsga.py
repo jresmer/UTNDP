@@ -539,9 +539,13 @@ class NSGA:
 
                     pick = parent1
 
-                else:
+                elif d1 > d2:
 
                     pick = parent2
+                
+                else:
+
+                    pick = choice((parent1, parent2))
 
         else:
 
