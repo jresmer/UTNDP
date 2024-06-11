@@ -100,9 +100,4 @@ class Consts:
         self.__MAX_VERTICES = max_v
         self.__UNREACHABLE_STOP_PENALTY = usp
         self.__MUTATION_PROBABILITY = mp
-
-    def reset(self) -> None:
-
-        for i in range(len(self._par)):
-            
-            self._t[i](self._par[i][0])
+        

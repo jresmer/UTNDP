@@ -85,7 +85,6 @@ def main():
 
                 best_cost = (float("inf"), float("inf"))
                 best_pop = None
-                consts.reset()
 
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
