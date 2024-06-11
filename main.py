@@ -89,15 +89,19 @@ def main():
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
 
-                for tp in [20, 15, 25]:
+                for tp in [20, 15]:
 
                     for min_v in [4, 3]:
 
                         for max_v in [8, 10]:
 
+                            if tp == 20 and max_v == 8: continue
+
                             for mp in [0.1, 0.25, 0.5]:
 
-                                for usp in [120, 200]:
+                                if tp == 20 and max_v == 10 and mp == 0.1: continue
+
+                                for usp in [120]:
 
                                     consts.set_variable_params(tp, min_v, max_v, usp, mp)
                                     start_time = time()
