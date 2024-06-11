@@ -146,7 +146,5 @@ def main():
                                         end_time=end_time
                                     )   
 
-                                    consts.vary()
-
 # roda o programa / runs program
 main()
