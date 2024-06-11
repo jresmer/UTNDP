@@ -794,8 +794,6 @@ class NSGA:
 
         for generation in range(max_generations):
 
-            print(generation)
-
             r = deepcopy(population)
             r = self.routeset_union(r, offspring)
 
