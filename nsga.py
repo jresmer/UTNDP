@@ -258,7 +258,7 @@ class NSGA:
 
                 if d[i][j] == float('inf'):
 
-                    total_time += self._consts.UNREACHABLE_STOP_PENALTY
+                    total_time += self._consts.UNREACHABLE_STOP_PENALTY*demand_matrix[i][j]
                 else:
                     
                     total_time += d[i][j]*demand_matrix[i][j]
