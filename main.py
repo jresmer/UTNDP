@@ -90,55 +90,64 @@ def main():
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
 
-                for _ in range(72):
-                    start_time = time()
+                for tp in [20, 15, 25]:
 
-                    pop = gen.generate_population(
-                        g=g,
-                        routeset_size=consts.MIN_LINES,
-                        population_size=200,
-                        total_fleet=consts.FLEET_SIZE,
-                        max_vertices=consts.MAX_VERTICES,
-                        min_vertices=consts.MIN_VERTICES,
-                        demand_matrix=d
-                    )
+                    for min_v in [4, 3]:
 
-                    pop = unsga3.loop(
-                        max_generations=200,
-                        population=pop,
-                        g=g,
-                        reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],
-                        demand_matrix=d
-                    )
+                        for max_v in [8, 10]:
 
-                    _, costs = unsga3.get_best_individual(g, d)
+                            for mp in [0.1, 0.25, 0.5]:
 
-                    if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
-                        costs[0] < best_cost[0] or costs[1] < best_cost[1]:
+                                for usp in [120, 200]:
 
-                        best_cost = costs
-                        best_pop = pop
+                                    consts.set_variable_params(tp, min_v, max_v, usp, mp)
+                                    start_time = time()
 
-                    end_time = time()
+                                    pop = gen.generate_population(
+                                        g=g,
+                                        routeset_size=consts.MIN_LINES,
+                                        population_size=200,
+                                        total_fleet=consts.FLEET_SIZE,
+                                        max_vertices=consts.MAX_VERTICES,
+                                        min_vertices=consts.MIN_VERTICES,
+                                        demand_matrix=d
+                                    )
 
-                    log.write_row(
-                        instance=instance,
-                        population_size=consts.POPULATION_SIZE,
-                        mutation_prob=consts.MUTATION_PROBABILITY,
-                        fleet_size=consts.FLEET_SIZE,
-                        min_lines=consts.MIN_LINES,
-                        min_vertices=consts.MIN_VERTICES,
-                        max_vertices=consts.MAX_VERTICES,
-                        transfer_penalty=consts.TRANFER_PENALTY,
-                        unreached_stop_penalty=consts.UNREACHABLE_STOP_PENALTY,
-                        best_ind=costs,
-                        start_time=start_time,
-                        end_time=end_time
-                    )   
+                                    pop = unsga3.loop(
+                                        max_generations=200,
+                                        population=pop,
+                                        g=g,
+                                        reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],
+                                        demand_matrix=d
+                                    )
 
-                    consts.vary()
+                                    _, costs = unsga3.get_best_individual(g, d)
 
-                    dao.add(best_pop)
+                                    if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
+                                        costs[0] < best_cost[0] or costs[1] < best_cost[1]:
+
+                                        best_cost = costs
+                                        best_pop = pop
+                                        dao.add(best_pop)
+
+                                    end_time = time()
+
+                                    log.write_row(
+                                        instance=instance,
+                                        population_size=consts.POPULATION_SIZE,
+                                        mutation_prob=consts.MUTATION_PROBABILITY,
+                                        fleet_size=consts.FLEET_SIZE,
+                                        min_lines=consts.MIN_LINES,
+                                        min_vertices=consts.MIN_VERTICES,
+                                        max_vertices=consts.MAX_VERTICES,
+                                        transfer_penalty=consts.TRANFER_PENALTY,
+                                        unreached_stop_penalty=consts.UNREACHABLE_STOP_PENALTY,
+                                        best_ind=costs,
+                                        start_time=start_time,
+                                        end_time=end_time
+                                    )   
+
+                                    consts.vary()
 
 # roda o programa / runs program
 main()
