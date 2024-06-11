@@ -258,7 +258,7 @@ class NSGA:
 
                 if d[i][j] == float('inf'):
 
-                    total_time += self._consts.UNREACHABLE_STOP_PENALTY
+                    total_time += self._consts.UNREACHABLE_STOP_PENALTY*demand_matrix[i][j]
                 else:
                     
                     total_time += d[i][j]*demand_matrix[i][j]
@@ -793,6 +793,8 @@ class NSGA:
         length = len(population) 
 
         for generation in range(max_generations):
+
+            print(generation)
 
             r = deepcopy(population)
             r = self.routeset_union(r, offspring)
