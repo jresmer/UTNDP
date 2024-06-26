@@ -5,6 +5,7 @@ from bus_line import BusLine
 from random import randint, choice, random, sample
 from copy import deepcopy
 from utils import Utils
+from time import time
 
 
 class PopGenerator:
@@ -790,7 +791,16 @@ class NSGA:
 
         offspring = list()
         associations = None
-        length = len(population) 
+        length = len(population)
+
+        times = {"objFuncs": 0,
+                 "nonDominatedSort": 0,
+                 "indPreSelection": 0,
+                 "hyperplaneUpdateAndNormalization": 0,
+                 "associations": 0,
+                 "niching": 0,
+                 "offspringGeneration": 0}
+        best_ind = [None] * max_generations
 
         for generation in range(max_generations):
 
@@ -798,7 +808,7 @@ class NSGA:
             r = self.routeset_union(r, offspring)
 
             obj_values = list()
-
+            start = time()
             for individual in r:
 
                 individual_values = [
@@ -807,11 +817,15 @@ class NSGA:
                 
                 obj_values.append(individual_values)
 
+            times["objFuncs"] += time() - start
+            start = time()
             fronts, ranks = self.non_dominanted_sort(obj_values)
+            times["nonDominatedSort"] += time() - start
 
             s = list()
             s_ids = list()
             front_i = -1
+            start = time()
             
             while front_i < len(fronts) - 1:
                 
@@ -837,7 +851,10 @@ class NSGA:
                         s.append(new_routeset)
                         s_ids.append(fronts[front_i][i])
 
+            times["indPreSelection"] += time - start()
+
             K = length - len(s)
+            start = time()
             hyperplane.update(
                 obj_values=obj_values,
                 fronts=fronts
@@ -848,6 +865,8 @@ class NSGA:
                 ideal_point=ideal_p,
                 nadir_point=nadir_p
                 )
+            times["hyperplaneUpdateAndNormalization"] += start - time()
+            start = time()
             selected_ind_values = list()
             ranks_ = list()
             for k in s_ids:
@@ -857,10 +876,12 @@ class NSGA:
                 ref_points=reference_points,
                 obj_values=selected_ind_values
             )
+            times["associations"] += time() - start
 
             # last front to be included
             if K > 0:
 
+                start = time()
                 remainder_individuals = fronts[front_i]
                 remainder_fronts = [[(ind, r[ind]) for ind in fronts[front_i]]]
                 for front in fronts[front_i+1:]:
@@ -885,7 +906,9 @@ class NSGA:
                     values=obj_values,
                     new_values=selected_ind_values
                 )
+                times["niching"] += time() - start
 
+            start = time()
             population = s
             offspring = self.generate_offspring(
                 g=g,
@@ -896,16 +919,18 @@ class NSGA:
                 demand_matrix=demand_matrix,
                 ref_points=reference_points
             )
+            times["offspringGeneration"] += time() - start
 
-        self.__last_population = population
+            _, v = self.get_best_individual(g, d, population)
+            best_ind[generation] = v
 
-        return population
+        return population, times, best_ind
     
-    def get_best_individual(self, g: nx.DiGraph, d: list):
+    def get_best_individual(self, g: nx.DiGraph, d: list, pop: list):
 
         obj_values = list()
         hyperplane = Hyperplane(2)
-        for individual in self.__last_population:
+        for individual in pop:
 
             individual_values = [
                  self.operator_cost(individual),
@@ -932,7 +957,7 @@ class NSGA:
         index = 0
         for i in fronts[0]:
 
-            individual = self.__last_population[i]
+            individual = pop[i]
 
             op_cost, ps_cost = obj_values[i]
             dist = np.sqrt(np.power(op_cost, 2) + np.power(ps_cost, 2))

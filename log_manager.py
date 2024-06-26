@@ -4,35 +4,47 @@ import os
 
 class LogManager:
 
-    def __init__(self, filename: str="log.csv"):
+    def __init__(self,
+                 filename: str="log.csv",
+                 add_times_log: bool=False,
+                 times_filesname: str="times_log.csv"):
 
         self.__filename = filename
-        self.__field_names = ['Instance', 'Population Size', 'Mutation Probability',
+        self.__fieldnames = ['Instance', 'Population Size', 'Mutation Probability',
                    'Total Fleet Size', 'Min Bus Line/Ind', 'Min Vertices in a Bus Line',
                    'Max Vertices in a Bus Line', 'Transfer Penalty', 'Unreached Stop Penalty',
                    'Best Solution Operator Cost', 'Best Solution Passanger Cost', 'Total Time']
+        self.__times_file = add_times_log
+        self.__times_filename = times_filesname
+        self.__times_fieldnames = ["objFuncs", "nonDominatedSort", "indPreSelection",
+                 "hyperplaneUpdateAndNormalization", "associations", "niching", "offspringGeneration"]
 
     # writes csv file header
-    def write_header(self) -> bool:
+    def write_header(self, mode: bool=False) -> bool:
+
+        if not mode:
+            filename = self.__filename
+            fieldnames = self.__fieldnames
+        elif self.__times_file:
+            filename = self.__times_filename
+            fieldnames = self.__times_fieldnames
+        else:
+            return False
 
         # if file does not exist
-        if not os.path.exists(self.__filename):
-
+        if not os.path.exists(filename):
             # create a new file and write
-            with open(self.__filename, "wt") as csv_file:
-
-                writer = csv.DictWriter(csv_file, fieldnames=self.__field_names)
+            with open(filename, "wt") as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                 writer.writeheader()
 
             return True
 
         # if file exists and is empty
-        elif os.stat(self.__filename).st_size == 0:
-
+        elif os.stat(filename).st_size == 0:
             # write header
-            with open(self.__filename, "a") as csv_file:
-
-                writer = csv.DictWriter(csv_file, fieldnames=self.__field_names)
+            with open(filename, "a") as csv_file:
+                writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                 writer.writeheader()
 
             return True
@@ -56,7 +68,6 @@ class LogManager:
         
         # if file exists and is not empty (has at least a header written in it)
         if os.path.exists(self.__filename) and os.stat(self.__filename).st_size != 0:
-        
             # associates contents to columns
             row_content = {
                 'Instance': instance,
@@ -75,6 +86,24 @@ class LogManager:
 
             # writes row
             with open(self.__filename, "a", newline="") as csv_file:
-
-                writer = csv.DictWriter(csv_file, fieldnames=self.__field_names)
+                writer = csv.DictWriter(csv_file, fieldnames=self.__fieldnames)
                 writer.writerow(row_content)
+
+            return True
+
+        return False
+
+    def write_times(self, times: dict) -> bool:
+
+        # if file does not exists or is empty
+        if not os.path.exists(self.__times_filename) or not os.stat(self.__times_filename).st_size != 0:
+            return False
+        # if object is not set to have a times log
+        if not self.__times_file:
+            return False
+        
+        with open(self.__times_filename, "a", newline="") as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.__times_fieldnames)
+            writer.writerow(times)
+
+        return True

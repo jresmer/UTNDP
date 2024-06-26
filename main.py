@@ -70,85 +70,65 @@ def main():
         if len(sys.argv) == 1:
 
             consts = Consts()
-            log = LogManager("refactor_log.csv")
-            dao = PopulationDAO("refactor_pop_data.txt")
+            consts.set_variable_params(15, 4, 8, 120, 0.5)
+            log = LogManager("log.csv", add_times_log=True)
+            dao = PopulationDAO("pop_data.txt")
+            dao1 = PopulationDAO("best_solutions.txt")
             gen = PopGenerator()
             unsga3 = NSGA(consts)
 
             # writing log header
             log.write_header()
+            log.write_header(True)
 
             # instances
-            instances = ["Mumford0"]
+            instances = ["Mumford1", "Mumford1", "Mumford2", "Mumford3"]
 
             for instance in instances:
 
-                best_cost = (float("inf"), float("inf"))
-                best_pop = None
-
                 # preparando intâncias / preparing instances
                 g, d = prepare_instance(instance)
+                start_time = time()
 
-                for tp in [20, 15]:
+                pop = gen.generate_population(
+                    g=g,
+                    routeset_size=consts.MIN_LINES,
+                    population_size=200,
+                    total_fleet=consts.FLEET_SIZE,
+                    max_vertices=consts.MAX_VERTICES,
+                    min_vertices=consts.MIN_VERTICES,
+                    demand_matrix=d
+                )
+                print("Pop0")
 
-                    for min_v in [4, 3]:
+                pop, times, best_individuals = unsga3.loop(
+                    max_generations=200,
+                    population=pop,
+                    g=g,
+                    reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],
+                    demand_matrix=d
+                )
 
-                        for max_v in [8, 10]:
+                costs = best_individuals[199]
+                dao.add(pop)
+                dao1.add(best_individuals)
 
-                            if tp == 20 and max_v == 8: continue
-
-                            for mp in [0.1, 0.25, 0.5]:
-
-                                if tp == 20 and max_v == 10 and mp == 0.1: continue
-
-                                for usp in [120]:
-
-                                    consts.set_variable_params(tp, min_v, max_v, usp, mp)
-                                    start_time = time()
-
-                                    pop = gen.generate_population(
-                                        g=g,
-                                        routeset_size=consts.MIN_LINES,
-                                        population_size=200,
-                                        total_fleet=consts.FLEET_SIZE,
-                                        max_vertices=consts.MAX_VERTICES,
-                                        min_vertices=consts.MIN_VERTICES,
-                                        demand_matrix=d
-                                    )
-
-                                    pop = unsga3.loop(
-                                        max_generations=200,
-                                        population=pop,
-                                        g=g,
-                                        reference_points=[(4, 0), (4, 1), (4, 2), (4, 3), (4, 4)],
-                                        demand_matrix=d
-                                    )
-
-                                    _, costs = unsga3.get_best_individual(g, d)
-
-                                    if costs[0] <= best_cost[0] and costs[1] <= best_cost[1] and \
-                                        costs[0] < best_cost[0] or costs[1] < best_cost[1]:
-
-                                        best_cost = costs
-                                        best_pop = pop
-                                        dao.add(best_pop)
-
-                                    end_time = time()
-
-                                    log.write_row(
-                                        instance=instance,
-                                        population_size=consts.POPULATION_SIZE,
-                                        mutation_prob=consts.MUTATION_PROBABILITY,
-                                        fleet_size=consts.FLEET_SIZE,
-                                        min_lines=consts.MIN_LINES,
-                                        min_vertices=consts.MIN_VERTICES,
-                                        max_vertices=consts.MAX_VERTICES,
-                                        transfer_penalty=consts.TRANFER_PENALTY,
-                                        unreached_stop_penalty=consts.UNREACHABLE_STOP_PENALTY,
-                                        best_ind=costs,
-                                        start_time=start_time,
-                                        end_time=end_time
-                                    )   
+                end_time = time()
+                log.write_times(times)
+                log.write_row(
+                    instance=instance,
+                    population_size=consts.POPULATION_SIZE,
+                    mutation_prob=consts.MUTATION_PROBABILITY,
+                    fleet_size=consts.FLEET_SIZE,
+                    min_lines=consts.MIN_LINES,
+                    min_vertices=consts.MIN_VERTICES,
+                    max_vertices=consts.MAX_VERTICES,
+                    transfer_penalty=consts.TRANFER_PENALTY,
+                    unreached_stop_penalty=consts.UNREACHABLE_STOP_PENALTY,
+                    best_ind=costs,
+                    start_time=start_time,
+                    end_time=end_time
+                )   
 
 # roda o programa / runs program
 main()
