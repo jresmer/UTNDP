@@ -851,7 +851,7 @@ class NSGA:
                         s.append(new_routeset)
                         s_ids.append(fronts[front_i][i])
 
-            times["indPreSelection"] += time - start()
+            times["indPreSelection"] += time() - start
 
             K = length - len(s)
             start = time()
@@ -865,7 +865,7 @@ class NSGA:
                 ideal_point=ideal_p,
                 nadir_point=nadir_p
                 )
-            times["hyperplaneUpdateAndNormalization"] += start - time()
+            times["hyperplaneUpdateAndNormalization"] += time() - start
             start = time()
             selected_ind_values = list()
             ranks_ = list()
