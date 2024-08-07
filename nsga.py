@@ -921,7 +921,7 @@ class NSGA:
             )
             times["offspringGeneration"] += time() - start
 
-            _, v = self.get_best_individual(g, d, population)
+            _, v = self.get_best_individual(g, demand_matrix, population)
             best_ind[generation] = v
 
         return population, times, best_ind
