@@ -120,7 +120,7 @@ def main():
                     population_size=consts.POPULATION_SIZE,
                     mutation_prob=consts.MUTATION_PROBABILITY,
                     fleet_size=consts.FLEET_SIZE,
-                    min_lines=10,
+                    min_lines=8,
                     min_vertices=consts.MIN_VERTICES,
                     max_vertices=consts.MAX_VERTICES,
                     transfer_penalty=consts.TRANFER_PENALTY,
