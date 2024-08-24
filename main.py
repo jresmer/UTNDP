@@ -92,7 +92,7 @@ def main():
 
                 pop = gen.generate_population(
                     g=g,
-                    routeset_size=consts.MIN_LINES,
+                    routeset_size=8,
                     population_size=200,
                     total_fleet=consts.FLEET_SIZE,
                     max_vertices=consts.MAX_VERTICES,
@@ -120,7 +120,7 @@ def main():
                     population_size=consts.POPULATION_SIZE,
                     mutation_prob=consts.MUTATION_PROBABILITY,
                     fleet_size=consts.FLEET_SIZE,
-                    min_lines=8,
+                    min_lines=consts.MIN_LINES,
                     min_vertices=consts.MIN_VERTICES,
                     max_vertices=consts.MAX_VERTICES,
                     transfer_penalty=consts.TRANFER_PENALTY,
