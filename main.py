@@ -92,7 +92,7 @@ def main():
 
                 pop = gen.generate_population(
                     g=g,
-                    routeset_size=8,
+                    routeset_size=10,
                     population_size=200,
                     total_fleet=consts.FLEET_SIZE,
                     max_vertices=consts.MAX_VERTICES,
